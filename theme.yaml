@@ -1,0 +1,7 @@
+themes:
+  light:
+    text_color: "black"
+    chat_bubble_color: "#d6d6d6"
+  dark:
+    text_color: "white"
+    chat_bubble_color: "#333333"
