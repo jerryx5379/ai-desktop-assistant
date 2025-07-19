@@ -18,7 +18,7 @@ The UserInput class handles the inference with Ollama
 # 2. Make the markdown to html look better (make response of llm better)
 # 3. add settings to allow user to control font size etc
 # 4. make the theme update automatically
-
+# 5. let OllamaWorker have memory
 
 from PySide6.QtWidgets import QApplication
 import sys

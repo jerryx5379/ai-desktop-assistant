@@ -34,8 +34,6 @@ class UserInput(QHBoxLayout):
         # This adds the user's text message to the chat_box
         self.chat_bubble = ChatBubble(text=text, sender= "user")
         self.chat_box.scroll_layout.insertWidget(self.chat_box.scroll_layout.count(), self.chat_bubble)
-        self.chat_bubble.document().adjustSize()
-        self.adjust_height() 
         self.input_text.clear()
 
         self.chat_box.verticalScrollBar().setValue( # scroll down
@@ -64,7 +62,6 @@ class UserInput(QHBoxLayout):
         self.chat_bubble.moveCursor(QTextCursor.End)
         self.chat_bubble.insertPlainText(chunk)
         self.chat_bubble.ensureCursorVisible()
-        self.adjust_height()
 
     def worker_finished(self):
         # basic formatting: get the plain text, convert it to html then set html
@@ -74,12 +71,5 @@ class UserInput(QHBoxLayout):
 
         self.send_button.setEnabled(True) 
 
-    def adjust_height(self):
-        doc_height = self.chat_bubble.document().size().height() + 28
-        #margin = self.contentsMargins().top() + self.contentsMargins().bottom() + 10
-        try:
-            self.chat_bubble.setFixedHeight(int(doc_height))
-        except:
-            pass # self.chat_bubble doesnt exist
         
     
