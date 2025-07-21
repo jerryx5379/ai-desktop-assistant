@@ -36,22 +36,8 @@ class ChatBubble(QTextBrowser):
         doc_height = self.document().size().toSize().height()
         margins = self.contentsMargins()
         new_height = doc_height + margins.top() + margins.bottom()
-        # self.setFixedHeight(new_height)
+        self.setFixedHeight(new_height)
         
-        per_line_height = self.fontMetrics().lineSpacing()
-        
-        if not hasattr(self, 'current_height'):
-            self.current_height = new_height
-
-        # only change the height when the new height is not drastically different than the current height (to avoid glitchy ui)
-        if new_height < self.current_height + (2)*per_line_height:
-            self.setFixedHeight(new_height)
-            self.current_height = new_height
-        
-
-       
-
-
     def resizeEvent(self, event: QResizeEvent):
         super().resizeEvent(event)
         self.update_height()

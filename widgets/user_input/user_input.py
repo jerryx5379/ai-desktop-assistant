@@ -1,8 +1,8 @@
 from PySide6.QtWidgets import (
-    QHBoxLayout,QPushButton
+    QHBoxLayout,QPushButton,QTextBrowser
 )
-from PySide6.QtGui import QTextCursor
-from PySide6.QtCore import QThread
+from PySide6.QtGui import QTextCursor, QFontMetrics
+from PySide6.QtCore import QThread, QTimer
 
 import markdown
 
@@ -23,6 +23,12 @@ class UserInput(QHBoxLayout):
         self.addWidget(self.input_text) 
         self.addWidget(self.send_button) 
 
+        self.total_chat_bubbles_height = 0
+        self.layout_spacing = self.chat_box.scroll_layout.spacing()
+        self.total_scroll_content_height = 0
+
+        sample_chat_bubble = ChatBubble(text="1",sender="user")
+        QTimer.singleShot(0,lambda: self.get_indiv_line_height(sample_chat_bubble))
 
     def send_message(self):
         text = self.input_text.toPlainText().strip() 
@@ -36,9 +42,9 @@ class UserInput(QHBoxLayout):
         self.chat_box.scroll_layout.insertWidget(self.chat_box.scroll_layout.count(), self.chat_bubble)
         self.input_text.clear()
 
-        self.chat_box.verticalScrollBar().setValue( # scroll down
-            self.chat_box.verticalScrollBar().maximum()
-        )
+        sample_chat_bubble = ChatBubble(text="1",sender="user") # used to get unit height of a chat bubble
+        QTimer.singleShot(0,lambda: self.add_preview_height(sample_chat_bubble))
+
 
         # This adds the llm's response to chatbox. while the response is being streamed on another thread, user cannot send another message
         self.chat_bubble = ChatBubble(text=text,sender = "assistant")
@@ -63,6 +69,11 @@ class UserInput(QHBoxLayout):
         self.chat_bubble.insertPlainText(chunk)
         self.chat_bubble.ensureCursorVisible()
 
+        if self.chat_bubble.height() + self.total_chat_bubbles_height + self.layout_spacing > self.total_scroll_content_height:
+            self.total_scroll_content_height += 2*self.layout_spacing
+            self.chat_box.scroll_content.setMinimumHeight(self.total_scroll_content_height)
+
+
     def worker_finished(self):
         # basic formatting: get the plain text, convert it to html then set html
         text = self.chat_bubble.toPlainText()
@@ -70,6 +81,52 @@ class UserInput(QHBoxLayout):
         self.chat_bubble.setHtml(text_html)
 
         self.send_button.setEnabled(True) 
+
+    def add_preview_height(self, sample_chat_bubble:QTextBrowser):
+        self.add_to_chat_bubbles_total_height()
+
+        unit_height_of_chat_bubble = sample_chat_bubble.height()
+        viewport_height = self.chat_box.viewport().height()
+        padding_height = viewport_height - unit_height_of_chat_bubble
+
+        self.total_scroll_content_height = self.total_chat_bubbles_height + padding_height
+
+        self.chat_box.scroll_content.setMinimumHeight(self.total_scroll_content_height)
+
+        self.chat_box.verticalScrollBar().setValue( 
+            self.chat_box.verticalScrollBar().maximum()
+        )
+        
+
+    ### Helper Functions ###
+    def add_to_chat_bubbles_total_height(self):
+        layout = self.chat_box.scroll_layout
+
+        if layout.count() == 2: 
+            height = layout.itemAt(0).widget().height()
+            self.total_chat_bubbles_height += height 
+            self.indexes_added = [0]
+        else:
+            last_index = self.indexes_added[-1]
+            new_indexes = [last_index+1,last_index+2]
+            for index in new_indexes:
+                height = layout.itemAt(index).widget().height()
+                self.total_chat_bubbles_height += height + self.layout_spacing
+                self.indexes_added.append(index)
+
+    def get_indiv_line_height(self, sample_chat_bubble:QTextBrowser):
+        line_height = QFontMetrics(sample_chat_bubble.font()).lineSpacing()
+        self.indiv_line_height = line_height
+
+    
+
+        
+        
+
+        
+
+
+        
 
         
     

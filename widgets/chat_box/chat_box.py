@@ -17,3 +17,14 @@ class ChatBox(QScrollArea):
         self.setWidget(self.scroll_content)
 
         
+
+
+
+
+
+
+
+
+
+
+        

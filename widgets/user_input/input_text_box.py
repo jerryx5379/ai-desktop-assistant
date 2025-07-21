@@ -4,6 +4,8 @@ from PySide6.QtWidgets import (
 )
 
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QResizeEvent
+
 
 
 class InputTextBox(QTextEdit):
@@ -34,6 +36,10 @@ class InputTextBox(QTextEdit):
                     self.send_message()
         else:
             super().keyPressEvent(event)
+
+    def resizeEvent(self, event: QResizeEvent):
+        super().resizeEvent(event)
+        self.adjust_input_height()
 
 
 
