@@ -40,11 +40,11 @@ class UserInput(QHBoxLayout):
         # This adds the user's text message to the chat_box
         self.chat_bubble = ChatBubble(text=text, sender= "user")
         self.chat_box.scroll_layout.insertWidget(self.chat_box.scroll_layout.count(), self.chat_bubble)
+        self.chat_box.update_chat_context(role = "user", message = text)
         self.input_text.clear()
 
         sample_chat_bubble = ChatBubble(text="1",sender="user") # used to get unit height of a chat bubble
         QTimer.singleShot(0,lambda: self.add_preview_height(sample_chat_bubble))
-
 
         # This adds the llm's response to chatbox. while the response is being streamed on another thread, user cannot send another message
         self.chat_bubble = ChatBubble(text=text,sender = "assistant")
@@ -52,7 +52,10 @@ class UserInput(QHBoxLayout):
 
         self.thread = QThread()
         self.thread.setObjectName("Ollama_inference_thread")
-        self.worker = OllamaWorker(user_prompt=text)
+
+        url = "http://localhost:11434/api/chat"
+        data = self.chat_box.get_data()
+        self.worker = OllamaWorker(url=url, data=data)
         self.worker.moveToThread(self.thread)
 
         self.thread.started.connect(self.worker.stream_ollama)
@@ -72,7 +75,6 @@ class UserInput(QHBoxLayout):
         if self.chat_bubble.height() + self.total_chat_bubbles_height + self.layout_spacing > self.total_scroll_content_height:
             self.total_scroll_content_height += 2*self.layout_spacing
             self.chat_box.scroll_content.setMinimumHeight(self.total_scroll_content_height)
-
 
     def worker_finished(self):
         # basic formatting: get the plain text, convert it to html then set html
