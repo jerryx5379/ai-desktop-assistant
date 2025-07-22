@@ -32,6 +32,11 @@ class ChatBubble(QTextBrowser):
         if sender == "user":
             self.insertPlainText(text)
 
+        self.ignore_wheel_event = True
+        self.ignore_keypress_scrolling = True
+
+        self.code_block_font = "'Consolas', monospace"
+
     def update_height(self):
         doc_height = self.document().size().toSize().height()
         margins = self.contentsMargins()
@@ -43,12 +48,16 @@ class ChatBubble(QTextBrowser):
         self.update_height()
 
     def wheelEvent(self, event):
-        event.ignore()
+        if self.ignore_wheel_event:
+            event.ignore()
+        else:
+            super().wheelEvent(event)
 
     def keyPressEvent(self, event):
-        # Ignore key events that could cause scrolling
-        if event.key() in (Qt.Key_Up, Qt.Key_Down, Qt.Key_PageUp, Qt.Key_PageDown):
-            event.ignore()
+        if self.ignore_keypress_scrolling:
+            # Ignore key events that could cause scrolling
+            if event.key() in (Qt.Key_Up, Qt.Key_Down, Qt.Key_PageUp, Qt.Key_PageDown):
+                event.ignore()
         else:
             super().keyPressEvent(event)
 

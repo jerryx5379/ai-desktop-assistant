@@ -6,7 +6,7 @@ from PySide6.QtCore import QObject, Signal
 
 class OllamaWorker(QObject):
     text_chunk = Signal(str) # these are class vars but act as instance vars?
-    finished  = Signal()
+    finished  = Signal(str)
 
     def __init__(self, url, data):
         super().__init__()
@@ -15,7 +15,6 @@ class OllamaWorker(QObject):
         self.data = data
         
     def stream_ollama(self):
-
         with requests.post(url=self.url, json=self.data, stream=True) as response:
             response.raise_for_status() 
             
@@ -38,7 +37,7 @@ class OllamaWorker(QObject):
                     assis_response += new_text 
                     self.text_chunk.emit(new_text)
         
-        self.finished.emit()
+        self.finished.emit(assis_response)
 
 
     

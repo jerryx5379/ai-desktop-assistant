@@ -2,13 +2,15 @@ from PySide6.QtWidgets import (
     QHBoxLayout,QPushButton,QTextBrowser
 )
 from PySide6.QtGui import QTextCursor, QFontMetrics
-from PySide6.QtCore import QThread, QTimer
+from PySide6.QtCore import QThread, QTimer, Qt
 
 import markdown
+from pygments.formatters.html import HtmlFormatter
 
 from threads import OllamaWorker
 from widgets.chat_box import ChatBubble
 from .input_text_box import InputTextBox
+from utils import Theme
 
 class UserInput(QHBoxLayout):
     def __init__(self, chat_box):
@@ -73,15 +75,41 @@ class UserInput(QHBoxLayout):
         self.chat_bubble.ensureCursorVisible()
 
         if self.chat_bubble.height() + self.total_chat_bubbles_height + self.layout_spacing > self.total_scroll_content_height:
-            self.total_scroll_content_height += 2*self.layout_spacing
+            self.total_scroll_content_height += 8*self.layout_spacing
             self.chat_box.scroll_content.setMinimumHeight(self.total_scroll_content_height)
 
-    def worker_finished(self):
+    def worker_finished(self, response):
+        self.chat_box.update_chat_context(role = "assistant", message = response)
+
         # basic formatting: get the plain text, convert it to html then set html
-        text = self.chat_bubble.toPlainText()
-        text_html = markdown.markdown(text=text,extensions=['fenced_code','tables'])
+        text_html = markdown.markdown(text=response,extensions=['fenced_code','tables','codehilite'])
+        theme = Theme()
+        if theme.is_dark_theme():
+            style = HtmlFormatter(style='monokai').get_style_defs('.codehilite')
+        else:
+            style = HtmlFormatter(style='manni').get_style_defs('.codehilite')
+
+
+        text_html = f"""
+<style>
+{style}
+.codehilite {{
+    font-family: {self.chat_bubble.code_block_font};
+    background-color: transparent !important;
+
+}}
+</style>
+{text_html}
+"""
         self.chat_bubble.setHtml(text_html)
 
+        if '<code' in text_html and '</code>' in text_html:
+            self.chat_bubble.ignore_keypress_scrolling = False
+            self.chat_bubble.ignore_wheel_event = False
+
+        #adjust_height = self.chat_bubble.height() + 2*self.layout_spacing + self.total_chat_bubbles_height
+        #self.chat_box.scroll_content.setMinimumHeight(adjust_height)
+        
         self.send_button.setEnabled(True) 
 
     def add_preview_height(self, sample_chat_bubble:QTextBrowser):
