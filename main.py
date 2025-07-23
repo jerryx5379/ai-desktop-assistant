@@ -13,12 +13,8 @@ The UserInput class handles the inference with Ollama
 
 # TODO: add load model and unload model on program start and end
 
-# This version TODO: Better user experience
-# 1. Make the height of the ChatBubbles better and on resizeEvent
-# 2. Make the markdown to html look better (make response of llm better)
-# 3. add settings to allow user to control font size etc
-# 4. make the theme update automatically
-# 5. let OllamaWorker have memory
+# This version TODO: 
+
 
 from PySide6.QtWidgets import QApplication
 from PySide6.QtGui import QFontDatabase, QFont
